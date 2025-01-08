@@ -15,7 +15,7 @@ This is a simple and efficient port scanner that allows you to scan open ports o
     ```
 2. Navigate to the project directory:
     ```sh
-    cd port-scanner
+    cd Port-Scanner
     ```
 
 ## Usage
