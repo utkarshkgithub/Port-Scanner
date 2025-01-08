@@ -11,15 +11,11 @@ This is a simple and efficient port scanner that allows you to scan open ports o
 ## Installation
 1. Clone the repository:
     ```sh
-    git clone https://github.com/yourusername/port-scanner.git
+    git clone https://github.com/utkarshkgithub/Port-Scanner
     ```
 2. Navigate to the project directory:
     ```sh
     cd port-scanner
-    ```
-3. Install the required dependencies:
-    ```sh
-    pip install -r requirements.txt
     ```
 
 ## Usage
