@@ -13,10 +13,19 @@ import binascii
 
 try:
     from scapy.all import *
+    from scapy.layers.inet import IP, TCP, UDP, ICMP
+    from scapy.layers.http import HTTPRequest, HTTPResponse
     SCAPY_AVAILABLE = True
 except ImportError:
     SCAPY_AVAILABLE = False
     print("Warning: Scapy not available for packet capture")
+    # Define dummy classes to prevent NameError
+    class IP: pass
+    class TCP: pass
+    class UDP: pass
+    class ICMP: pass
+    class HTTPRequest: pass
+    class HTTPResponse: pass
 
 try:
     import pyshark
@@ -83,7 +92,7 @@ class PacketCaptureAnalyzer:
             'capture_filter': 'tcp or udp',
             'max_packets': 10000,
             'capture_timeout': 300,  # 5 minutes
-            'interface': 'any',
+            'interface': None,  # Will auto-detect
             'save_pcap': True,
             'pcap_filename': None,
             'deep_packet_inspection': True,
@@ -103,6 +112,39 @@ class PacketCaptureAnalyzer:
         self.capture_running = True
         capture_filter = self.config['capture_filter']
         interface = self.config['interface']
+        
+        # Auto-detect interface if not specified
+        if interface is None:
+            try:
+                import subprocess
+                # Get list of UP interfaces
+                result = subprocess.run(['ip', 'link', 'show'], capture_output=True, text=True)
+                up_interfaces = []
+                for line in result.stdout.split('\n'):
+                    if 'state UP' in line and '<' in line:
+                        # Extract interface name
+                        iface_name = line.split(':')[1].strip()
+                        if iface_name != 'lo' and not iface_name.startswith('docker') and not iface_name.startswith('br-'):
+                            up_interfaces.append(iface_name)
+                
+                if up_interfaces:
+                    interface = up_interfaces[0]  # Use first UP interface
+                else:
+                    interface = 'lo'  # Fallback to loopback
+            except:
+                # Fallback to Scapy method
+                try:
+                    from scapy.arch import get_if_list
+                    interfaces = get_if_list()
+                    # Prefer non-loopback interfaces
+                    for iface in interfaces:
+                        if iface != 'lo' and not iface.startswith('docker'):
+                            interface = iface
+                            break
+                    else:
+                        interface = 'lo'
+                except:
+                    interface = 'lo'  # Safe fallback
         
         # Generate filename if not provided
         if self.config['save_pcap'] and not self.config['pcap_filename']:
@@ -158,6 +200,9 @@ class PacketCaptureAnalyzer:
     def _extract_packet_info(self, packet) -> Optional[PacketInfo]:
         """Extract relevant information from packet"""
         try:
+            if not SCAPY_AVAILABLE:
+                return None
+                
             if not packet.haslayer(IP):
                 return None
             

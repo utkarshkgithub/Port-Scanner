@@ -97,7 +97,7 @@ class NetworkIDSLite:
     def _default_config(self) -> Dict:
         """Default IDS configuration"""
         return {
-            'monitoring_interface': 'any',
+            'monitoring_interface': None,  # Will auto-detect interface
             'alert_threshold': 'low',
             'baseline_learning_period': 300,  # 5 minutes
             'max_alerts_per_minute': 10,
@@ -376,7 +376,43 @@ class NetworkIDSLite:
             return
         
         self.running = True
-        interface = interface or self.config['monitoring_interface']
+        
+        # Auto-detect interface if not specified
+        if interface is None:
+            interface = self.config['monitoring_interface']
+        
+        # Auto-detect interface if not specified
+        if interface is None:
+            try:
+                import subprocess
+                # Get list of UP interfaces
+                result = subprocess.run(['ip', 'link', 'show'], capture_output=True, text=True)
+                up_interfaces = []
+                for line in result.stdout.split('\n'):
+                    if 'state UP' in line and '<' in line:
+                        # Extract interface name
+                        iface_name = line.split(':')[1].strip()
+                        if iface_name != 'lo' and not iface_name.startswith('docker') and not iface_name.startswith('br-'):
+                            up_interfaces.append(iface_name)
+                
+                if up_interfaces:
+                    interface = up_interfaces[0]  # Use first UP interface
+                else:
+                    interface = 'lo'  # Fallback to loopback
+            except:
+                # Fallback to Scapy method
+                try:
+                    from scapy.arch import get_if_list
+                    interfaces = get_if_list()
+                    # Prefer non-loopback interfaces
+                    for iface in interfaces:
+                        if iface != 'lo' and not iface.startswith('docker'):
+                            interface = iface
+                            break
+                    else:
+                        interface = 'lo'
+                except:
+                    interface = 'lo'  # Safe fallback
         
         def packet_handler(packet):
             if not self.running:
