@@ -1,0 +1,11 @@
+# Python cache
+__pycache__/
+.pytest_cache/
+
+# Virtual environment
+.venv/
+
+# Scan results and logs
+scan_*.json
+*.pcap
+*.log

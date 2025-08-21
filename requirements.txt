@@ -1,0 +1,6 @@
+scapy>=2.5.0
+pyshark>=0.6
+pytest>=7.0.0
+requests>=2.28.0
+colorama>=0.4.6
+rich>=13.0.0

@@ -1,14 +1,22 @@
 #!usr/bin/python3
 
+"""
+Legacy Port Scanner - Backward Compatibility
+This is the original port scanner maintained for backward compatibility.
+For advanced features, use network_diagnostic_tool.py or cli.py
+"""
+
 import socket
 import sys
 import time
 import threading
 
 print("-"*70)
-print("Simple Port Scanner")
+print("Simple Port Scanner (Legacy Version)")
+print("For advanced features, use: python cli.py scan")
 print("-"*70)
-usage = "python3 port_scan.py TARGET START_PORT END_PORT"
+
+usage = "python3 port_scanner.py TARGET START_PORT END_PORT"
 start_time = time.time()
 
 port_service_map = {
@@ -28,6 +36,8 @@ def get_service_name(port):
 
 if(len(sys.argv)!=4):
   print(usage)
+  print("\nFor advanced scanning features, try:")
+  print("python cli.py scan TARGET START_PORT END_PORT")
   sys.exit()
 
 try:
@@ -69,3 +79,17 @@ end_time =time.time()
 
 print("Time elapsed:",end_time-start_time, 's')
 print("bye!!")
+
+# Display upgrade message
+print("\n" + "="*50)
+print("🚀 UPGRADE AVAILABLE!")
+print("This is the legacy version. For advanced features try:")
+print("python cli.py scan {} {} {}".format(sys.argv[1], sys.argv[2], sys.argv[3]))
+print("\nNew features include:")
+print("• Banner grabbing and service detection")
+print("• Traceroute and network path analysis") 
+print("• Intrusion detection system")
+print("• Packet capture and analysis")
+print("• Web dashboard with real-time monitoring")
+print("• JSON export and structured logging")
+print("="*50)
